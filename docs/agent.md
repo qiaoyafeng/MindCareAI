@@ -386,7 +386,7 @@ export async function modelScopeChatCompletion(
     messages: payload.messages,
     stream: payload.stream ?? true,
     temperature: 0.7,
-    max_tokens: 512,
+    max_tokens: 4096, // 不限制输出长度，保证思考过程完整闭合后正常输出正文
   };
 
   // 流式响应支持打字机效果
@@ -429,7 +429,7 @@ export async function modelScopeVisionChat(
   payload: { model: string; text: string; image_url: string }
 ) {
   const body = {
-    model: 'Qwen/Qwen2-VL-7B-Instruct',
+    model: 'Qwen/Qwen3.5-122B-A10B',
     messages: [{
       role: 'user',
       content: [
@@ -534,7 +534,7 @@ let happy = Math.max(0.02, 0.25 - pauseRatio * 0.4 - (0.1 - avgRms));
 
 ### 8.2 表情识别实现
 
-表情识别采用**Qwen2-VL 视觉语言模型**进行9维情绪分析：
+表情识别采用**Qwen3.5-122B-A10B 多模态视觉语言模型**进行9维情绪分析（原 Qwen2-VL-7B-Instruct 已在 ModelScope 下架）：
 
 ```typescript
 // 文件: src/components/assessment/ExpressionStep.tsx
@@ -570,7 +570,7 @@ const prompt = `分析面部图像，返回JSON格式：
 
 // 3. 调用视觉模型
 const aiRes = await modelScopeVisionChat({
-  model: 'Qwen/Qwen2-VL-7B-Instruct',
+  model: 'Qwen/Qwen3.5-122B-A10B',
   text: prompt,
   image_url: compressedImage,
 }, { timeout: 8000 });

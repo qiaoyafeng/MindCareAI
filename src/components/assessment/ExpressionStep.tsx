@@ -305,7 +305,7 @@ export default function ExpressionStep({ onComplete }: ExpressionStepProps) {
       const aiRes = await withTimeout(
         modelScopeVisionChat(
           {
-            model: 'Qwen/Qwen2-VL-7B-Instruct', // 使用更快的轻量级视觉模型
+            model: 'Qwen/Qwen3.5-122B-A10B', // 轻量级MoE视觉模型（Qwen2-VL-7B已在ModelScope下架）
             text: prompt,
             image_url: dataUrl
           },

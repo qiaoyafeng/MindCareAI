@@ -26,7 +26,14 @@ export function formatAIResponse(text: string): string {
  * 去除推理模型输出中的 <think>...</think> 思考过程
  */
 function stripThinking(text: string): string {
-  return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  return text
+    // 移除完整的思考块
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    // 移除因输出截断而未闭合的思考块（一直删到结尾，避免思考内容漏出）
+    .replace(/<think>[\s\S]*$/i, '')
+    // 移除可能残留的孤立闭合标签
+    .replace(/<\/think>/gi, '')
+    .trim();
 }
 
 export interface ModelScopeMessage {
@@ -61,7 +68,7 @@ export async function modelScopeChatCompletion(
       messages: payload.messages,
       stream: payload.stream ?? true,
       temperature: 0.7,
-      max_tokens: 512,
+      max_tokens: 4096, // 不限制输出长度，保证思考过程完整闭合后正常输出正文
     };
 
     // 使用流式响应
@@ -87,28 +94,33 @@ export async function modelScopeChatCompletion(
 
       const decoder = new TextDecoder();
       let fullText = '';
+      let lineBuffer = '';
+
+      const processLine = (line: string) => {
+        if (!line.startsWith('data: ')) return;
+        const data = line.slice(6).trim();
+        if (!data || data === '[DONE]') return;
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed?.choices?.[0]?.delta || {};
+          // 仅累加正文，思考内容若在 reasoning_content 字段则忽略
+          fullText += delta?.content || '';
+        } catch {
+          // 忽略解析错误
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        // 解析 SSE 格式的数据
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed?.choices?.[0]?.delta?.content || '';
-              fullText += content;
-            } catch {
-              // 忽略解析错误
-            }
-          }
-        }
+        // 按行缓冲：SSE 行可能被网络分片截断，直接按 chunk 解析会丢失内容
+        lineBuffer += decoder.decode(value, { stream: true });
+        const lines = lineBuffer.split('\n');
+        lineBuffer = lines.pop() || '';
+        lines.forEach(processLine);
       }
+      if (lineBuffer) processLine(lineBuffer);
 
       return { raw: { model, messages: payload.messages }, text: stripThinking(fullText) };
     }
@@ -211,7 +223,7 @@ export async function modelScopeVisionChat(
         ],
         stream: false,
         temperature: 0,
-        max_tokens: 200, // 减少token以加快响应
+        max_tokens: 300, // 保留完整JSON输出余量
       };
       
       const res = await ky.post('/innerapi/v1/modelscope/chat/completions', {
