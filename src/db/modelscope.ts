@@ -22,6 +22,13 @@ export function formatAIResponse(text: string): string {
     .trim();
 }
 
+/**
+ * 去除推理模型输出中的 <think>...</think> 思考过程
+ */
+function stripThinking(text: string): string {
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
+
 export interface ModelScopeMessage {
   role: 'user' | 'system' | 'assistant';
   content: string;
@@ -37,7 +44,7 @@ export interface ModelScopeResponse {
 
 /**
  * ModelScope 聊天补全函数 - 用于 AI 评估聊天界面
- * 使用 MiniMax/MiniMax-M2.5 模型
+ * 使用 MiniMax/MiniMax-M1-80k 模型
  * @param payload.messages - 消息数组，包含 system prompt 和 user message
  * @param payload.stream - 是否使用流式响应（默认 true 以支持打字机效果）
  */
@@ -46,7 +53,7 @@ export async function modelScopeChatCompletion(
   options?: { timeout?: number; signal?: AbortSignal }
 ) {
   const timeout = options?.timeout || 60000;
-  const model = 'MiniMax/MiniMax-M2.5';
+  const model = 'MiniMax/MiniMax-M1-80k';
   
   try {
     const body = {
@@ -103,7 +110,7 @@ export async function modelScopeChatCompletion(
         }
       }
 
-      return { raw: { model, messages: payload.messages }, text: fullText };
+      return { raw: { model, messages: payload.messages }, text: stripThinking(fullText) };
     }
 
     // 非流式响应
@@ -124,7 +131,7 @@ export async function modelScopeChatCompletion(
       throw new Error(`ModelScope error ${res.status}: ${msg}`);
     }
 
-    const text = data?.choices?.[0]?.message?.content || '';
+    const text = stripThinking(data?.choices?.[0]?.message?.content || '');
     return { raw: data, text };
   } catch (err: any) {
     throw new Error(String(err?.message || err));

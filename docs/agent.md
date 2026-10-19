@@ -382,7 +382,7 @@ export async function modelScopeChatCompletion(
   payload: { messages: ModelScopeMessage[]; stream?: boolean }
 ) {
   const body = {
-    model: 'MiniMax/MiniMax-M2.5',
+    model: 'MiniMax/MiniMax-M1-80k',
     messages: payload.messages,
     stream: payload.stream ?? true,
     temperature: 0.7,

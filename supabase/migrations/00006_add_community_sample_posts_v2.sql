@@ -15,8 +15,8 @@ BEGIN
   SELECT id INTO encourage_cat_id FROM post_categories WHERE name = '提供鼓励';
   SELECT id INTO recovery_cat_id FROM post_categories WHERE name = '康复故事';
   
-  -- 获取第一个用户ID
-  SELECT id INTO first_user_id FROM auth.users LIMIT 1;
+  -- 获取第一个有档案的用户ID（auth.users 中可能存在尚未生成 profiles 的历史用户）
+  SELECT id INTO first_user_id FROM profiles LIMIT 1;
 
   -- 插入示例帖子
   IF first_user_id IS NOT NULL THEN
