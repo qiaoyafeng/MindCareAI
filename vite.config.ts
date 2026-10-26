@@ -12,8 +12,32 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    base: '/',
+    // 部署在子路径（如 https://ai.haoxinqing.cn/mindcareai/）时，通过 VITE_BASE_PATH=/mindcareai/ 覆盖
+    base: env.VITE_BASE_PATH || '/',
     publicDir: 'public',
+    // 开发服务器：容器内监听 0.0.0.0，并允许经反向代理域名访问
+    server: {
+      host: '0.0.0.0',
+      port: 5173,
+      // Vite 默认拦截未知 Host；.haoxinqing.cn 可匹配其全部子域名
+      // 需追加其它域名时在 .env 中配置 VITE_ALLOWED_HOSTS（逗号分隔）
+      allowedHosts: [
+        '.haoxinqing.cn',
+        'localhost',
+        '.localhost',
+        ...(env.VITE_ALLOWED_HOSTS || '').split(','),
+      ]
+        .map((host) => host.trim())
+        .filter(Boolean),
+      // 经 HTTPS 反向代理访问时，HMR 需走 wss 且连到代理对外端口
+      // 如 .env 配置 VITE_HMR_PROTOCOL=wss、VITE_HMR_CLIENT_PORT=443
+      hmr: env.VITE_HMR_PROTOCOL
+        ? {
+            protocol: env.VITE_HMR_PROTOCOL as 'ws' | 'wss',
+            clientPort: Number(env.VITE_HMR_CLIENT_PORT || 443),
+          }
+        : undefined,
+    },
     plugins: [
       react(),
       svgr({
