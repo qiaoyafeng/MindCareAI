@@ -1,0 +1,23 @@
+# 本地开发用容器镜像
+# 说明：如需更换基底镜像，可将 node:20-alpine 替换为 node:20-slim（Debian 基底，
+#       体积更大，但能规避 alpine(musl) 下潜在的本地原生依赖编译问题）。
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 使用与 package.json 中 packageManager 一致的 pnpm 版本
+RUN npm install -g pnpm@10.0.0
+
+# 先复制依赖清单，利用 Docker 构建层缓存加速重复构建
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+
+# 安装全部依赖（含 devDependencies，开发服务器需要）
+RUN pnpm install --no-frozen-lockfile
+
+# 复制其余源码（开发运行时会被 docker-compose 的目录挂载覆盖）
+COPY . .
+
+EXPOSE 5173
+
+# 启动 Vite 开发服务器并监听 0.0.0.0，使宿主机可访问
+CMD ["pnpm", "exec", "vite", "--host", "0.0.0.0", "--port", "5173"]

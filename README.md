@@ -414,6 +414,8 @@ MindCareAI/
 - **开发环境**
   - VS Code (推荐) + 相关插件
   - Git 2.0+
+- **Docker（可选）**
+  - Docker Desktop（使用 Docker Compose 启动时需要）
 
 ### ⚡ 快速安装
 
@@ -501,7 +503,7 @@ npm run dev
 #### 6. 访问应用
 打开浏览器访问 `http://localhost:5173`
 
-```
+> 也可使用 Docker Compose 启动（无需在本机安装 Node/pnpm），详见[部署指南](#-部署指南) 中的「Docker Compose 部署（本地开发环境）」。
 
 ### 🏗️ 构建和部署
 
@@ -574,6 +576,38 @@ vercel --prod
 ```
 
 注意：需要在Vercel环境变量中配置所有必需的API密钥。
+
+
+### 🐳 Docker Compose 部署（本地开发环境）
+
+项目提供基于 Docker Compose 的本地开发环境：容器内运行 Vite 开发服务器，源码目录绑定挂载实现热更新，AI 代理中间件自动生效；后端仍使用云端 Supabase。
+
+相关文件：`Dockerfile.dev`、`docker-compose.yml`、`.dockerignore`。
+
+#### 前置条件
+- 已安装并启动 Docker Desktop
+- 项目根目录已存在 `.env`（可参考[快速开始](#-快速开始) 第 3 步）
+
+#### 启动
+```bash
+# 构建并后台启动（首次构建约 3-5 分钟）
+docker compose up -d --build
+
+# 查看日志
+docker compose logs -f web
+
+# 停止并移除容器
+docker compose down
+```
+
+启动完成后访问 `http://localhost:5173`。
+
+#### 说明
+- **依赖隔离**：项目根目录挂载到容器 `/app`，容器内 `node_modules` 使用独立卷，避免与宿主机依赖冲突
+- **热更新**：已启用文件轮询（`CHOKIDAR_USEPOLLING=true`），Windows 环境亦可正常热更新
+- **密钥注入**：通过 `env_file` 读取根目录 `.env`，与本机开发共用同一份配置
+- 基于 `node:20-alpine`；如遇原生依赖编译问题，可将 `Dockerfile.dev` 基底改为 `node:20-slim`
+- 该方式面向本地开发；生产静态托管仍在 Vercel 上进行
 
 
 ### 后端配置

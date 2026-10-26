@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mindcareai-dev
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      # 源码绑定挂载：宿主机改动即时反映到容器内
+      - .:/app
+      # 匿名卷：隔离容器内的 node_modules，避免被宿主机(Windows)依赖覆盖
+      - /app/node_modules
+    env_file:
+      # 注入 AI / Supabase 等密钥，需先存在 .env（cp .env.example .env）
+      - .env
+    environment:
+      # Windows 绑定挂载不触发文件事件，开启轮询以保证热更新生效
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true

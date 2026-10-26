@@ -242,6 +242,7 @@ MindCareAI/
 - **Node.js** ≥ 20.0.0（推荐 LTS）
 - **pnpm** ≥ 8.0.0（项目使用 pnpm 10.0.0）
 - **现代浏览器**：Chrome 88+ / Edge 88+ / Safari 14+ / Firefox 78+（需 WebRTC、Web Audio API、Canvas）
+- **Docker（可选）**：Docker Desktop，使用 Docker Compose 启动时需要
 
 ### 🚀 快速开始
 
@@ -360,6 +361,30 @@ supabase functions deploy parse-document
 supabase functions deploy rag-retrieval
 supabase functions deploy auth-username-signup
 ```
+
+#### 方案 D：Docker Compose（本地开发环境）
+项目提供基于 Docker Compose 的本地开发环境：容器内运行 Vite 开发服务器，源码目录绑定挂载实现热更新，AI 代理中间件自动生效；后端仍使用云端 Supabase。
+
+相关文件：`Dockerfile.dev`、`docker-compose.yml`、`.dockerignore`。需先安装并启动 Docker Desktop，并准备好 `.env`。
+
+```bash
+# 构建并后台启动（首次构建约 3-5 分钟）
+docker compose up -d --build
+
+# 查看日志
+docker compose logs -f web
+
+# 停止并移除容器
+docker compose down
+```
+
+启动完成后访问 `http://localhost:5173`，与本机 `pnpm run dev` 一致。
+
+要点：
+- **依赖隔离**：项目根目录挂载到容器 `/app`，容器内 `node_modules` 使用独立卷，避免与宿主机依赖冲突
+- **热更新**：已启用文件轮询（`CHOKIDAR_USEPOLLING=true`），Windows 环境亦可正常热更新
+- **密钥注入**：通过 `env_file` 读取根目录 `.env`，与本机开发共用同一份配置
+- 基于 `node:20-alpine`；如遇原生依赖编译问题，可将 `Dockerfile.dev` 基底改为 `node:20-slim`
 
 ---
 
