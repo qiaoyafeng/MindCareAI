@@ -11,9 +11,14 @@ export default defineConfig(({ mode }) => {
   // Set the third parameter to '' to load all envs regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '');
 
+  // 部署在子路径（如 https://ai.haoxinqing.cn/mindcareai/）时，通过 VITE_BASE_PATH=/mindcareai/ 覆盖
+  // 统一规范为前后均带斜杠的形式，与 import.meta.env.BASE_URL 保持一致
+  const base = `/${(env.VITE_BASE_PATH || '').replace(/^\/+|\/+$/g, '')}/`.replace(/\/+/g, '/');
+  // 前端以 `${BASE_URL}innerapi/...` 请求，开发态代理中间件需挂载在同一前缀下
+  const innerApiPrefix = `${base}innerapi/v1`;
+
   return {
-    // 部署在子路径（如 https://ai.haoxinqing.cn/mindcareai/）时，通过 VITE_BASE_PATH=/mindcareai/ 覆盖
-    base: env.VITE_BASE_PATH || '/',
+    base,
     publicDir: 'public',
     // 开发服务器：容器内监听 0.0.0.0，并允许经反向代理域名访问
     server: {
@@ -49,7 +54,7 @@ export default defineConfig(({ mode }) => {
       {
         name: 'modelscope-intern-proxy',
         configureServer(server: any) {
-          server.middlewares.use('/innerapi/v1/modelscope/chat/completions', async (req: any, res: any) => {
+          server.middlewares.use(`${innerApiPrefix}/modelscope/chat/completions`, async (req: any, res: any) => {
             const key = env.MODELSCOPE_API_KEY || env.VITE_MODELSCOPE_API_KEY || '';
             console.log(`[ModelScope Proxy] Request received. Key length: ${key.length}`);
             if (!key) {
@@ -100,7 +105,7 @@ export default defineConfig(({ mode }) => {
       {
         name: 'volc-ark-responses-proxy',
         configureServer(server: any) {
-          server.middlewares.use('/innerapi/v1/volc/responses', async (req: any, res: any) => {
+          server.middlewares.use(`${innerApiPrefix}/volc/responses`, async (req: any, res: any) => {
             const key = env.VOLC_ARK_API_KEY || env.VITE_VOLC_ARK_API_KEY || '';
             if (!key) {
               res.statusCode = 500;
@@ -148,7 +153,7 @@ export default defineConfig(({ mode }) => {
       {
         name: 'siliconflow-audio-proxy',
         configureServer(server: any) {
-          server.middlewares.use('/innerapi/v1/siliconflow/audio/transcriptions', async (req: any, res: any) => {
+          server.middlewares.use(`${innerApiPrefix}/siliconflow/audio/transcriptions`, async (req: any, res: any) => {
             const key = env.SILICONFLOW_API_KEY || env.VITE_SILICONFLOW_API_KEY || '';
             if (!key) {
               res.statusCode = 500;

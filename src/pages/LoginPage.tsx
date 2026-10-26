@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { getProfile, useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/db/supabase';
+import { withBase } from '@/lib/utils';
 import { validateUsername, sanitizeUsername } from '@/utils/validation';
 
 export default function LoginPage() {
@@ -130,7 +131,7 @@ export default function LoginPage() {
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-2">
             <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
-              <img src="/favicon.png" alt="灵愈AI" className="w-full h-full object-contain" />
+              <img src={withBase('/favicon.png')} alt="灵愈AI" className="w-full h-full object-contain" />
             </div>
           </div>
           <CardTitle className="text-2xl">灵愈AI数字医生</CardTitle>

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PageMeta from "@/components/common/PageMeta";
+import { withBase } from "@/lib/utils";
 
 export default function NotFound() {
   return (
@@ -11,9 +12,9 @@ export default function NotFound() {
             错误
           </h1>
 
-          <img src="/images/error/404.svg" alt="404" className="dark:hidden" />
+          <img src={withBase("/images/error/404.svg")} alt="404" className="dark:hidden" />
           <img
-            src="/images/error/404-dark.svg"
+            src={withBase("/images/error/404-dark.svg")}
             alt="404"
             className="hidden dark:block"
           />

@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// 为站内绝对路径拼接部署 base（如 /mindcareai/），用于 public 资源与 innerapi 请求
+export function withBase(path: string) {
+  return `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
+}
+
 export type Params = Partial<
   Record<keyof URLSearchParams, string | number | null | undefined>
 >;

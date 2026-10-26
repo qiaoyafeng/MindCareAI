@@ -1,6 +1,6 @@
 import { Activity, Heart, Home, User } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn, withBase } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,7 +25,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
   const handleLogoClick = () => {
     // 跳转到官网首页
-    window.location.href = '/index.html';
+    window.location.href = withBase('/index.html');
   };
 
   return (
@@ -42,7 +42,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
           >
             <div className="flex items-center gap-2">
               <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                <img src="/favicon.png" alt="灵愈AI" className="w-full h-full object-contain" />
+                <img src={withBase('/favicon.png')} alt="灵愈AI" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="text-xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 bg-clip-text text-transparent">

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { createEmotionDiary, getEmotionDiaries, updateEmotionDiary } from '@/db/api';
+import { withBase } from '@/lib/utils';
 import type { EmotionDiary, EmotionLevel } from '@/types';
 import { blobToBase64, convertWebmToWav } from '@/utils/audio';
 import { transcribeAudio } from '@/db/siliconflow';
@@ -671,7 +672,7 @@ export default function RecordPageNew() {
                   <h4 className="text-sm font-medium mb-2">切换图片</h4>
                   <div className="grid grid-cols-6 gap-2">
                     {['开心_1.png','喜悦恋爱_1.png','治愈温暖_1.png','惊讶_1.png','困倦_1.png','悲伤_1.png','生气_1.png','害怕_1.png'].map((name) => {
-                      const src = `/srcs/enjoy/${encodeURIComponent(name)}`;
+                      const src = withBase(`/srcs/enjoy/${encodeURIComponent(name)}`);
                       return (
                         <button key={name} onClick={async () => {
                           const latest = getLatestDiaryForDate(selectedDate);

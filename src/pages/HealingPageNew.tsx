@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
+import { withBase } from '@/lib/utils';
 import { 
   createMeditationSession,
   getMeditationStats,
@@ -99,7 +100,7 @@ const rawMusicFiles: Array<{
 ];
 
 // 音乐资源统一使用相对路径，Vite 构建时 public/ 目录下的文件会原样复制到 dist/
-const MUSIC_BASE_URL = '/srcs/music';
+const MUSIC_BASE_URL = withBase('/srcs/music');
 
 const meditationTracks = rawMusicFiles
   .map(({ fileName, category, description, coverImage }) => {

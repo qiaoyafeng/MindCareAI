@@ -1,4 +1,7 @@
 import ky from 'ky';
+import { withBase } from '@/lib/utils';
+
+const MODELSCOPE_CHAT_URL = withBase('/innerapi/v1/modelscope/chat/completions');
 
 /**
  * 格式化 AI 回复文本
@@ -73,7 +76,7 @@ export async function modelScopeChatCompletion(
 
     // 使用流式响应
     if (body.stream) {
-      const response = await fetch('/innerapi/v1/modelscope/chat/completions', {
+      const response = await fetch(MODELSCOPE_CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +129,7 @@ export async function modelScopeChatCompletion(
     }
 
     // 非流式响应
-    const res = await ky.post('/innerapi/v1/modelscope/chat/completions', {
+    const res = await ky.post(MODELSCOPE_CHAT_URL, {
       json: body,
       timeout,
       throwHttpErrors: false,
@@ -160,7 +163,7 @@ export async function modelScopeChat(payload: { model: string; messages: ModelSc
       temperature: 0.2,
       max_tokens: 128
     };
-    const res = await ky.post('/innerapi/v1/modelscope/chat/completions', {
+    const res = await ky.post(MODELSCOPE_CHAT_URL, {
       json: body,
       timeout: 30000,
       throwHttpErrors: false
@@ -175,7 +178,7 @@ export async function modelScopeChat(payload: { model: string; messages: ModelSc
       const msg = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg);
       const code = isJson ? (data?.code || '') : '';
       if (res.status === 400 && typeof code === 'string' && code === '-20081') {
-        const smallRes = await ky.post('/innerapi/v1/modelscope/chat/completions', {
+        const smallRes = await ky.post(MODELSCOPE_CHAT_URL, {
           json: { ...body, max_tokens: 64, temperature: 0 },
           timeout: 30000,
           throwHttpErrors: false
@@ -226,7 +229,7 @@ export async function modelScopeVisionChat(
         max_tokens: 300, // 保留完整JSON输出余量
       };
       
-      const res = await ky.post('/innerapi/v1/modelscope/chat/completions', {
+      const res = await ky.post(MODELSCOPE_CHAT_URL, {
         json: body,
         timeout: timeout,
         throwHttpErrors: false,
